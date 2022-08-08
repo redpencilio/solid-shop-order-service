@@ -1,0 +1,16 @@
+{
+  "name": "solid-shop-order-service",
+  "version": "1.0.0",
+  "description": "Order part of the Solid Shop",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redpencilio/solid-shop-order-service.git"
+  },
+  "author": "Ieben Smessaert",
+  "license": "MIT",
+  "homepage": "https://github.com/redpencilio/solid-shop-order-service#readme"
+}
