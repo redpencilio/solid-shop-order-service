@@ -12,5 +12,10 @@
   },
   "author": "Ieben Smessaert",
   "license": "MIT",
-  "homepage": "https://github.com/redpencilio/solid-shop-order-service#readme"
+  "homepage": "https://github.com/redpencilio/solid-shop-order-service#readme",
+  "dependencies": {
+    "@inrupt/solid-client-authn-node": "^1.12.2",
+    "@lblod/mu-auth-sudo": "^0.6.0",
+    "uuid": "^8.3.2"
+  }
 }
