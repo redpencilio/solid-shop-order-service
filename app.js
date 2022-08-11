@@ -1,7 +1,7 @@
 import {app, errorHandler} from 'mu';
 import {ensureTrailingSlash} from "./helper";
-import {findOfferingDetails, saveOrder} from "./buy";
-import {sendSavedOrderTask} from "./tasks";
+import {findOfferingDetails, getPaymentInformationFromPaymentId, saveOrder, updateOrder} from "./buy";
+import bodyParser from 'body-parser';
 
 const brokerWebId = process.env.BROKER_WEB_ID;
 
@@ -38,9 +38,34 @@ app.post('/buy', async (req, res) => {
 
     const orderInfo = await saveOrder(offering, buyerPod, sellerPod, buyerWebId, offering.sellerWebId.value, brokerWebId);
 
-    await sendSavedOrderTask(orderInfo.orderUUID);
-
     res.send(JSON.stringify(orderInfo));
+});
+
+app.post('/buy/callback', bodyParser.json(), async (req, res) => {
+    const paymentId = req.body.paymentId;
+    if (paymentId === undefined) {
+        res.status(400).send('Missing payment id');
+        return;
+    }
+
+    console.log('Payment callback for payment id ' + paymentId);
+    const paymentInformation = await getPaymentInformationFromPaymentId(paymentId);
+    if (!Array.isArray(paymentInformation.results.bindings) || paymentInformation.results.bindings.length === 0) {
+        throw new Error(`No payment information found for payment ID '${paymentId}'.`);
+    }
+    const orderStatus = paymentInformation.results.bindings[0].orderStatus.value;
+    const buyerPod = ensureTrailingSlash(paymentInformation.results.bindings[0].buyerPod.value);
+    const sellerPod = ensureTrailingSlash(paymentInformation.results.bindings[0].sellerPod.value);
+    const orderId = paymentInformation.results.bindings[0].order.value;
+    const sellerWebId = paymentInformation.results.bindings[0].seller.value;
+    const buyerWebId = paymentInformation.results.bindings[0].customer.value;
+    console.log(`Order status is '${orderStatus}'.`);
+
+    if (await updateOrder(buyerPod, sellerPod, orderId, paymentId, sellerWebId, buyerWebId)) {
+        res.send('OK');
+    } else {
+        res.status(500).send('Order update failed');
+    }
 });
 
 app.use(errorHandler);

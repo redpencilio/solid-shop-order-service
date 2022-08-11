@@ -1,6 +1,7 @@
 import {querySudo as query, updateSudo as update} from '@lblod/mu-auth-sudo';
 import {objectToString} from "./helper";
 import {v4 as uuid} from 'uuid'
+import {sendSavedOrderTask, sendUpdatedOrderTask} from "./tasks";
 
 export async function findOfferingDetails(buyerPod, sellerPod, offeringId) {
     const offeringsQuery = `
@@ -29,6 +30,25 @@ export async function findOfferingDetails(buyerPod, sellerPod, offeringId) {
     }`;
 
     return query(offeringsQuery);
+}
+
+export async function getPaymentInformationFromPaymentId(paymentId) {
+    const queryQuery = `
+    PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+    PREFIX schema: <http://schema.org/>
+    SELECT ?orderStatus ?buyerPod ?sellerPod ?order ?seller ?customer
+    FROM <http://mu.semte.ch/application>
+    WHERE {
+        ?order a schema:Order;
+            schema:paymentMethodId "${paymentId}";
+            schema:orderStatus ?orderStatus;
+            ext:sellerPod ?sellerPod;
+            ext:buyerPod ?buyerPod;
+            schema:seller ?seller;
+            schema:customer ?customer.
+    }`;
+
+    return query(queryQuery);
 }
 
 export async function saveOrder(offer, buyerPod, sellerPod, buyerWebId, sellerWebId, brokerWebId) {
@@ -64,10 +84,19 @@ export async function saveOrder(offer, buyerPod, sellerPod, buyerWebId, sellerWe
 
     try {
         await update(insertOrderQuery);
+
+        await sendSavedOrderTask(orderUUID);
     } catch (e) {
         console.error(e);
         return null;
     }
 
     return {offerUUID, orderUUID};
+}
+
+export async function updateOrder(buyerPod, sellerPod, orderUUID) {
+
+    await sendUpdatedOrderTask(orderUUID);
+
+    return true;
 }
