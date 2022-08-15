@@ -2,6 +2,8 @@ import {app, errorHandler} from 'mu';
 import {ensureTrailingSlash} from "./helper";
 import {findOfferingDetails, getPaymentInformationFromPaymentId, saveOrder, updateOrder} from "./buy";
 import bodyParser from 'body-parser';
+import {getSales} from "./sales";
+import {getPurchases} from "./purchases";
 
 const brokerWebId = process.env.BROKER_WEB_ID;
 
@@ -66,6 +68,30 @@ app.post('/buy/callback', bodyParser.json(), async (req, res) => {
     } else {
         res.status(500).send('Order update failed');
     }
+});
+
+app.get('/sales', async (req, res) => {
+    const sellerWebId = decodeURIComponent(req.query.sellerWebId);
+    if (sellerWebId === undefined) {
+        res.status(400).send('Missing sellerWebId');
+        return;
+    }
+
+    const sales = await getSales(sellerWebId);
+
+    res.send(JSON.stringify(sales));
+});
+
+app.get('/purchases', async (req, res) => {
+    const buyerWebId = decodeURIComponent(req.query.buyerWebId);
+    if (buyerWebId === undefined) {
+        res.status(400).send('Missing buyerWebId');
+        return;
+    }
+
+    const purchases = await getPurchases(buyerWebId);
+
+    res.send(JSON.stringify(purchases));
 });
 
 app.use(errorHandler);
