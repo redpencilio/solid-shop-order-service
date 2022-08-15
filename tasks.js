@@ -7,6 +7,7 @@ export async function sendSavedOrderTask(orderId) {
     INSERT DATA { GRAPH <http://mu.semte.ch/graphs/tasks> {
         <http://mu.semte.ch/graphs/tasks#${uuid()}> a ext:Task;
             ext:taskType ext:SavedOrderTask;
+            ext:dataFlow ext:DbToPod;
             ext:order <${orderId}>;
             ext:taskStatus "pending";
             ext:taskCreatedAt "${new Date().toISOString()}".
@@ -21,6 +22,7 @@ export async function sendUpdatedOrderTask(orderId) {
     INSERT DATA { GRAPH <http://mu.semte.ch/graphs/tasks> {
         <http://mu.semte.ch/graphs/tasks#${uuid()}> a ext:Task;
             ext:taskType ext:UpdatedOrderTask;
+            ext:dataFlow ext:DbToPod;
             ext:order <${orderId}>;
             ext:taskStatus "pending";
             ext:taskCreatedAt "${new Date().toISOString()}".
