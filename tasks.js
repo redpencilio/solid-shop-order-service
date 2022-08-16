@@ -30,3 +30,19 @@ export async function sendUpdatedOrderTask(orderId) {
 
     return update(query);
 }
+
+export async function sendSyncOfferingsTask(webId, pod) {
+    const query = `
+    PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+    INSERT DATA { GRAPH <http://mu.semte.ch/graphs/tasks> {
+        <http://mu.semte.ch/graphs/tasks#${uuid()}> a ext:Task;
+            ext:taskType ext:SyncOfferingsTask;
+            ext:dataFlow ext:PodToDb;
+            ext:webId <${webId}>;
+            ext:pod <${pod}>;
+            ext:taskStatus "pending";
+            ext:taskCreatedAt "${new Date().toISOString()}".
+    } }`;
+
+    return update(query);
+}

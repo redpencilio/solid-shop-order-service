@@ -4,6 +4,7 @@ import {findOfferingDetails, getPaymentInformationFromPaymentId, saveOrder, upda
 import bodyParser from 'body-parser';
 import {getSales} from "./sales";
 import {getPurchases} from "./purchases";
+import {sendSyncOfferingsTask} from "./tasks";
 
 const brokerWebId = process.env.BROKER_WEB_ID;
 
@@ -92,6 +93,26 @@ app.get('/purchases', async (req, res) => {
     const purchases = await getPurchases(buyerWebId);
 
     res.send(JSON.stringify(purchases));
+});
+
+app.post('/sync', async (req, res) => {
+    let pod = req.body.pod;
+    if (pod === undefined) {
+        res.status(400).send('Missing pod');
+        return;
+    }
+    pod = ensureTrailingSlash(pod);
+    const webId = req.body.webId;
+    if (webId === undefined) {
+        res.status(400).send('Missing webId');
+        return;
+    }
+
+    if (await sendSyncOfferingsTask(webId, pod)) {
+        res.send('OK');
+    } else {
+        res.status(500).send('Sync failed');
+    }
 });
 
 app.use(errorHandler);
