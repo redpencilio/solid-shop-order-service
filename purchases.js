@@ -1,3 +1,4 @@
+import {sparqlEscapeUri} from 'mu';
 import { querySudo as query} from '@lblod/mu-auth-sudo';
 
 export async function getPurchases(buyerWebId) {
@@ -12,7 +13,7 @@ export async function getPurchases(buyerWebId) {
             schema:orderStatus ?orderStatus;
             schema:orderDate ?orderDate;
             schema:acceptedOffer ?offer;
-            schema:customer <${buyerWebId}>.
+            schema:customer ${sparqlEscapeUri(buyerWebId)}.
             
         ?offer a schema:Offer;
             schema:name ?offerName;

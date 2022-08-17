@@ -1,3 +1,4 @@
+import {sparqlEscapeUri, sparqlEscapeString} from 'mu';
 import {querySudo as query, updateSudo as update} from '@lblod/mu-auth-sudo';
 import {objectToString} from "./helper";
 import {v4 as uuid} from 'uuid'
@@ -26,7 +27,7 @@ export async function findOfferingDetails(buyerPod, sellerPod, offeringId) {
             gr:legalName ?seller;
             gr:description ?sellerWebId;
             gr:offers ?offering.
-        FILTER (?offering = <${offeringId}> && ?pod = <${sellerPod}>)
+        FILTER (?offering = ${sparqlEscapeUri(offeringId)} && ?pod = ${sparqlEscapeUri(sellerPod)})
     }`;
 
     return query(offeringsQuery);
@@ -40,7 +41,7 @@ export async function getPaymentInformationFromPaymentId(paymentId) {
     FROM <http://mu.semte.ch/application>
     WHERE {
         ?order a schema:Order;
-            schema:paymentMethodId "${paymentId}";
+            schema:paymentMethodId ${sparqlEscapeString(paymentId)};
             schema:orderStatus ?orderStatus;
             ext:sellerPod ?sellerPod;
             ext:buyerPod ?buyerPod;
@@ -62,20 +63,20 @@ export async function saveOrder(offer, buyerPod, sellerPod, buyerWebId, sellerWe
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
     INSERT { GRAPH <http://mu.semte.ch/application> {
         ?offer a schema:Offer;
-            schema:name "${offer.name.value}";
-            schema:description "${offer.description.value}";
+            schema:name ${sparqlEscapeString(offer.name.value)};
+            schema:description ${sparqlEscapeString(offer.description.value)};
             schema:price ${objectToString(offer.currencyValue)};
-            schema:priceCurrency "${offer.currency.value}";
-            schema:seller <${sellerWebId}>.
+            schema:priceCurrency ${sparqlEscapeString(offer.currency.value)};
+            schema:seller ${sparqlEscapeUri(sellerWebId)}.
         ?order a schema:Order;
             schema:acceptedOffer ?offer;
             schema:orderStatus <http://schema.org/OrderPaymentDue>;
-            schema:seller <${sellerWebId}>;
-            schema:customer <${buyerWebId}>;
-            schema:broker <${brokerWebId}>;
-            schema:orderDate "${orderDate}";
-            ext:sellerPod "${sellerPod}";
-            ext:buyerPod "${buyerPod}".
+            schema:seller ${sparqlEscapeUri(sellerWebId)};
+            schema:customer ${sparqlEscapeUri(buyerWebId)};
+            schema:broker ${sparqlEscapeUri(brokerWebId)};
+            schema:orderDate ${sparqlEscapeString(orderDate)};
+            ext:sellerPod ${sparqlEscapeString(sellerPod)};
+            ext:buyerPod ${sparqlEscapeString(buyerPod)}.
     } }
     WHERE {
         BIND(IRI("${offerUUID}") AS ?offer)

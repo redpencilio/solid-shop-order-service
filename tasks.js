@@ -1,3 +1,4 @@
+import {sparqlEscapeUri} from 'mu';
 import {updateSudo as update} from '@lblod/mu-auth-sudo';
 import {v4 as uuid} from 'uuid';
 
@@ -8,7 +9,7 @@ export async function sendSavedOrderTask(orderId) {
         <http://mu.semte.ch/graphs/tasks#${uuid()}> a ext:Task;
             ext:taskType ext:SavedOrderTask;
             ext:dataFlow ext:DbToPod;
-            ext:order <${orderId}>;
+            ext:order ${sparqlEscapeUri(orderId)};
             ext:taskStatus "pending";
             ext:taskCreatedAt "${new Date().toISOString()}".
     } }`;
@@ -23,7 +24,7 @@ export async function sendUpdatedOrderTask(orderId) {
         <http://mu.semte.ch/graphs/tasks#${uuid()}> a ext:Task;
             ext:taskType ext:UpdatedOrderTask;
             ext:dataFlow ext:DbToPod;
-            ext:order <${orderId}>;
+            ext:order ${sparqlEscapeUri(orderId)};
             ext:taskStatus "pending";
             ext:taskCreatedAt "${new Date().toISOString()}".
     } }`;
@@ -38,8 +39,8 @@ export async function sendSyncOfferingsTask(webId, pod) {
         <http://mu.semte.ch/graphs/tasks#${uuid()}> a ext:Task;
             ext:taskType ext:SyncOfferingsTask;
             ext:dataFlow ext:PodToDb;
-            ext:webId <${webId}>;
-            ext:pod <${pod}>;
+            ext:webId ${sparqlEscapeUri(webId)};
+            ext:pod ${sparqlEscapeUri(pod)};
             ext:taskStatus "pending";
             ext:taskCreatedAt "${new Date().toISOString()}".
     } }`;

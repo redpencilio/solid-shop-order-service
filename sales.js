@@ -1,3 +1,4 @@
+import {sparqlEscapeUri} from 'mu';
 import { querySudo as query} from '@lblod/mu-auth-sudo';
 
 export async function getSales(sellerWebId) {
@@ -8,7 +9,7 @@ export async function getSales(sellerWebId) {
     FROM <http://mu.semte.ch/application>
     WHERE {
         ?order a schema:Order;
-            schema:seller <${sellerWebId}>;
+            schema:seller ${sparqlEscapeUri(sellerWebId)};
             schema:orderStatus ?orderStatus;
             schema:orderDate ?orderDate;
             schema:acceptedOffer ?offer;
