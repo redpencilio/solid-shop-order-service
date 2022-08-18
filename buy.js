@@ -1,6 +1,6 @@
 import {sparqlEscapeUri, sparqlEscapeString} from 'mu';
 import {querySudo as query, updateSudo as update} from '@lblod/mu-auth-sudo';
-import {objectToString} from "./helper";
+import {constructTermToString} from "./helper";
 import {v4 as uuid} from 'uuid'
 import {sendSavedOrderTask, sendUpdatedOrderTask} from "./tasks";
 
@@ -65,7 +65,7 @@ export async function saveOrder(offer, buyerPod, sellerPod, buyerWebId, sellerWe
         ?offer a schema:Offer;
             schema:name ${sparqlEscapeString(offer.name.value)};
             schema:description ${sparqlEscapeString(offer.description.value)};
-            schema:price ${objectToString(offer.currencyValue)};
+            schema:price ${constructTermToString(offer.currencyValue)};
             schema:priceCurrency ${sparqlEscapeString(offer.currency.value)};
             schema:seller ${sparqlEscapeUri(sellerWebId)}.
         ?order a schema:Order;

@@ -1,22 +1,23 @@
 import {sparqlEscapeString, sparqlEscapeUri} from 'mu';
 
-export function objectToString(object) {
-    if (object.termType === 'NamedNode') {
-        return `${sparqlEscapeUri(object.value)}`;
-    } else if (object.termType === 'BlankNode') {
-        return `_:${object.value}`;
-    } else if (object.termType === 'Literal') {
-        if ('dataType' in object) {
-            return `${sparqlEscapeString(object.value)}^^${sparqlEscapeUri(object.dataType.value)}`;
-        } else if ('datatype' in object) {
-            return `${sparqlEscapeString(object.value)}^^${sparqlEscapeUri(object.datatype.value)}`;
+export function constructTermToString(term) {
+    if (term.type === 'uri') {
+        return sparqlEscapeUri(term.value);
+    } else if (term.type === 'literal') {
+        if ('xml:lang' in term) {
+            return `${sparqlEscapeString(term.value)}@${term['xml:lang']}`;
+        } else if ('datatype' in term) {
+            return `${sparqlEscapeString(term.value.toString())}^^${sparqlEscapeUri(term.datatype)}`;
         } else {
-            return `${sparqlEscapeString(object.value)}`;
+            return sparqlEscapeString(term.value);
         }
-    } else if (object.type === 'typed-literal') {
-        return objectToString({value: object.value, termType: 'Literal', datatype: {value: object.datatype}});
+    } else if (term.type === 'bnode') {
+        return `_:${term.value}`;
+    } else if (term.type === 'string') {
+        // this is not as per https://www.w3.org/TR/2013/REC-sparql11-results-json-20130321/#select-encode-terms
+        return sparqlEscapeString(term.value);
     } else {
-        throw new Error(`Unknown term type ${object.termType}`);
+        throw new Error(`Unknown term type ${term.type}`);
     }
 }
 
