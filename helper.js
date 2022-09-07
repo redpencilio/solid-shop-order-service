@@ -17,7 +17,32 @@ export function constructTermToString(term) {
         // this is not as per https://www.w3.org/TR/2013/REC-sparql11-results-json-20130321/#select-encode-terms
         return sparqlEscapeString(term.value);
     } else {
-        throw new Error(`Unknown term type ${term.type}`);
+        // Extra fallback option.
+        try {
+            return objectToString(term);
+        } catch (_) {
+            throw new Error(`Unknown term type ${term.type}`);
+        }
+    }
+}
+
+export function objectToString(object) {
+    if (object.termType === 'NamedNode') {
+        return `${sparqlEscapeUri(object.value)}`;
+    } else if (object.termType === 'BlankNode') {
+        return `_:${object.value}`;
+    } else if (object.termType === 'Literal') {
+        if ('dataType' in object) {
+            return `${sparqlEscapeString(object.value)}^^${sparqlEscapeUri(object.dataType.value)}`;
+        } else if ('datatype' in object) {
+            return `${sparqlEscapeString(object.value)}^^${sparqlEscapeUri(object.datatype.value)}`;
+        } else {
+            return `${sparqlEscapeString(object.value)}`;
+        }
+    } else if (object.type === 'typed-literal') {
+        return objectToString({value: object.value, termType: 'Literal', datatype: {value: object.datatype}});
+    } else {
+        throw new Error(`Unknown term type ${object.termType}`);
     }
 }
 
